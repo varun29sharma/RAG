@@ -1,0 +1,318 @@
+[
+  {
+    "id": "e0ca988d-023a-45da-a4d2-72d6731e1382",
+    "text": "DESIGN & ANALYSIS OF ALGORITHMS\nUnits III, IV & V — Complete Study Guide\nDynamic Programming | Backtracking | Branch & Bound | NP-Completeness\nConcepts • Algorithms • Dry Runs • Exam Questions"
+  },
+  {
+    "id": "bc54a856-7490-45d7-8b64-b746cf57d781",
+    "text": "UNIT III: DYNAMIC PROGRAMMING\nDynamic Programming (DP) is an algorithmic technique that solves complex problems by breaking\nthem into overlapping subproblems, storing results to avoid recomputation — a process called\nmemoization or tabulation.\n3.1 The General Method\nDynamic Programming is applicable when a problem has:\n• Optimal Substructure: Optimal solution of a problem contains optimal solutions to\nsubproblems.\n• Overlapping Subproblems: Same subproblems are solved repeatedly.\nTwo Approaches"
+  },
+  {
+    "id": "88960fcf-6160-4f0e-a082-f3e78688385e",
+    "text": "Two Approaches\nTop-Down (Memoization) \tBottom-Up (Tabulation)\nRecursive + cache results \tIterative, fill table from base cases\nEasier to implement \tMore efficient (no recursion overhead)\nUses call stack \tUses array/table\nComputes only needed subproblems \tComputes all subproblems\nGeneral DP Steps\n1. Characterize the structure of an optimal solution.\n2. Recursively define the value of an optimal solution.\n3. Compute the value bottom-up (or top-down with memoization)."
+  },
+  {
+    "id": "b2ea303b-19e4-4696-b373-13d8ac1b617b",
+    "text": "4. Reconstruct the optimal solution from computed information.\nKey Formula: DP[i] = optimal(DP[i-1], DP[i-2], ...) — each state builds on previously solved\nstates."
+  },
+  {
+    "id": "1c81bc22-50c5-40d5-88c1-191b99bc560d",
+    "text": "3.2 Bellman-Ford Algorithm\nFinds shortest paths from a single source to all vertices in a weighted directed graph. Unlike Dijkstra, it\nhandles negative edge weights.\nCore Concept\n• Relaxation: If dist[v] > dist[u] + w(u,v), update dist[v].\n• Perform relaxation (V-1) times for all edges.\n• Detect negative-weight cycles in the Vth pass.\nAlgorithm\nBellmanFord(G, src):\nInitialize dist[] = ∞ for all vertices; dist[src] = 0\nRepeat (V-1) times:\nFor each edge (u, v, w):\nif dist[u] + w < dist[v]:"
+  },
+  {
+    "id": "7532c8b7-3b8e-4496-a6db-827ede7ce18c",
+    "text": "if dist[u] + w < dist[v]:\ndist[v] = dist[u] + w\n// Check for negative cycle\nFor each edge (u, v, w):\nif dist[u] + w < dist[v]: NEGATIVE CYCLE DETECTED\nDry Run\nGraph: Vertices: {A,B,C,D,E} | Source: A\nEdges: A→B(6), A→C(7), B→C(8), B→D(5), B→E(-4), C→D(-3), C→E(9), D→B(-2), E→D(7)\nPass \tEdge Relaxed \tdist[] after\nInit \t— \tA=0, B=∞, C=∞, D=∞, E=∞\n1 \tA→B: dist[B]=0+6=6 \tA=0,B=6,C=∞,D=∞,E=∞\n1 \tA→C: dist[C]=0+7=7 \tA=0,B=6,C=7,D=∞,E=∞\n1 \tB→D: dist[D]=6+5=11 \tA=0,B=6,C=7,D=11,E=∞"
+  },
+  {
+    "id": "572f89d9-f9d3-4928-927f-e3afaceecf37",
+    "text": "1 \tB→D: dist[D]=6+5=11 \tA=0,B=6,C=7,D=11,E=∞\n1 \tB→E: dist[E]=6+(-4)=2 \tA=0,B=6,C=7,D=11,E=2\n2 \tC→D: dist[D]=7+(-3)=4 \tA=0,B=6,C=7,D=4,E=2\n2 \tD→B: dist[B]=4+(-2)=2 \tA=0,B=2,C=7,D=4,E=2\n3 \tB→D: dist[D]=2+5=7 (no update\nsince 4<7)\nStable\nFinal \t— \tA=0,B=2,C=7,D=4,E=-2\nComplexity\nMetric \tValue\nTime \tO(V × E)"
+  },
+  {
+    "id": "49b73304-89a6-4f60-a8a5-4fa29fe4c62a",
+    "text": "Space \tO(V)\nNegative cycles? \tYes — detected in Vth pass\nNegative weights? \tYes — handles them\nExam Tip: Bellman-Ford must run exactly V-1 passes. If any dist[] changes in the Vth pass,\na negative cycle exists.\nProbable Exam Questions\n5. Apply Bellman-Ford on a given graph with negative weights. Show all passes.\n6. Compare Bellman-Ford and Dijkstra — when to use which?\n7. Why does Bellman-Ford require V-1 iterations? What happens at the Vth iteration?"
+  },
+  {
+    "id": "8919a7bc-b683-46be-a7ec-d4600b9d775e",
+    "text": "8. Detect negative weight cycle in: A→B(-1), B→C(-1), C→A(-1)."
+  },
+  {
+    "id": "5692bcde-cb69-4edd-aa07-3243230b23c5",
+    "text": "3.3 Multistage Graph\nA multistage graph is a directed graph partitioned into k stages. Edges go only from stage i to stage i+1.\nGoal: Find shortest path from source (stage 1) to sink (stage k).\nDP Formulation\nCOST[i][v] = min over all edges (v,w) in stage i+1:\n{ c(v,w) + COST[i+1][w] }\n// Forward approach (source to sink)\nBCOST[v] = min over all edges (u,v):\n{ BCOST[u] + c(u,v) }\nDry Run\nGraph (4 stages): S→{A,B}, A→{C,D}, B→{C,D}, C→T, D→T"
+  },
+  {
+    "id": "456bf973-e5be-435e-9266-0c861a7c66c2",
+    "text": "Edge weights: S→A=2, S→B=1, A→C=3, A→D=6, B→C=7, B→D=4, C→T=3, D→T=2\nStage 4 (T): COST[T] = 0\nStage 3: COST[C] = c(C,T)+COST[T] = 3+0 = 3\nCOST[D] = c(D,T)+COST[T] = 2+0 = 2\nStage 2: COST[A] = min(c(A,C)+COST[C], c(A,D)+COST[D])\n= min(3+3, 6+2) = min(6,8) = 6 → via C\nCOST[B] = min(c(B,C)+COST[C], c(B,D)+COST[D])\n= min(7+3, 4+2) = min(10,6) = 6 → via D\nStage 1: COST[S] = min(c(S,A)+COST[A], c(S,B)+COST[B])\n= min(2+6, 1+6) = min(8,7) = 7 → via B\nShortest Path: S → B → D → T (cost = 1+4+2 = 7)"
+  },
+  {
+    "id": "5e8ff1af-908e-4600-8ee9-f36f972a3ee3",
+    "text": "Shortest Path: S → B → D → T (cost = 1+4+2 = 7)\nComplexity\nTime \tO(V + E)\nSpace \tO(V)\nDirection \tCan go forward or backward\nProbable Exam Questions\n9. Find the minimum cost path in a given multistage graph using DP.\n10. What is the difference between forward and backward approaches in multistage graphs?\n11. Draw the multistage graph and find shortest path for: [given edge list]."
+  },
+  {
+    "id": "bc7e5082-bfc6-4777-8175-1069dc404146",
+    "text": "3.4 All-Pairs Shortest Paths (Floyd-Warshall)\nFinds shortest paths between ALL pairs of vertices. Uses intermediate vertices progressively.\nRecurrence\nD(k)[i][j] = min( D(k-1)[i][j], D(k-1)[i][k] + D(k-1)[k][j] )\n= min( direct path i→j, path through vertex k )\nWhere k = intermediate vertex (1 to n)\nInitialize: D(0)[i][j] = weight(i,j) if edge exists, else ∞; D[i][i] = 0\nDry Run\nGraph (4 vertices): Adjacency matrix:\n1 \t2 \t3 \t4\n1 [ 0 \t3 \t∞ \t7 ]\n2 [ 8 \t0 \t2 \t∞ ]\n3 [ 5 \t∞ \t0 \t1 ]\n4 [ 2 \t∞ \t∞ \t0 ]"
+  },
+  {
+    "id": "3dbb1ab8-f19a-4425-99f8-076f9aaecca3",
+    "text": "3 [ 5 \t∞ \t0 \t1 ]\n4 [ 2 \t∞ \t∞ \t0 ]\nAfter k=1 (through vertex 1):\nD[2][4] = min(∞, D[2][1]+D[1][4]) = min(∞, 8+7) = 15\nD[3][2] = min(∞, D[3][1]+D[1][2]) = min(∞, 5+3) = 8\nAfter k=2 (through vertex 2):\nD[1][3] = min(∞, D[1][2]+D[2][3]) = min(∞, 3+2) = 5\nAfter k=3 (through vertex 3):\nD[1][4] = min(7, D[1][3]+D[3][4]) = min(7, 5+1) = 6\nD[2][4] = min(15, D[2][3]+D[3][4]) = min(15, 2+1) = 3\nFinal D[][] =\n1 \t2 \t3 \t4\n1 [ 0 \t3 \t5 \t6 ]\n2 [ 7 \t0 \t2 \t3 ]\n3 [ 5 \t8 \t0 \t1 ]\n4 [ 2 \t5 \t7 \t0 ]\nComplexity"
+  },
+  {
+    "id": "a9c29e83-b3ef-4a4a-bbd3-d9c3a63a5e37",
+    "text": "3 [ 5 \t8 \t0 \t1 ]\n4 [ 2 \t5 \t7 \t0 ]\nComplexity\nTime \tO(n³)\nSpace \tO(n²)\nHandles negative weights? \tYes\nDetects negative cycles? \tYes — D[i][i] < 0\nProbable Exam Questions\n12. Apply Floyd-Warshall algorithm on a given 4x4 adjacency matrix."
+  },
+  {
+    "id": "211e4737-3a92-4005-b869-f956678116a2",
+    "text": "13. How to detect negative-weight cycles using Floyd-Warshall?\n14. Compare Floyd-Warshall vs running Bellman-Ford from every vertex.\n15. Reconstruct the actual shortest path between two vertices using predecessor matrix."
+  },
+  {
+    "id": "5b498cf3-9937-4ae8-8ffc-4a5ca125a94c",
+    "text": "3.5 Matrix Chain Multiplication\nGiven n matrices, find the most efficient order to multiply them so that the total number of scalar\nmultiplications is minimized.\nKey Insight\nMultiplying an p×q matrix with a q×r matrix costs p×q×r operations. The problem is to place\nparentheses optimally.\nDP Formulation\nm[i][j] = minimum multiplications to compute A_i × ... × A_j\nBase case: m[i][i] = 0\nRecurrence:\nm[i][j] = min over all k (i ≤ k < j):\n{ m[i][k] + m[k+1][j] + p[i-1]*p[k]*p[j] }"
+  },
+  {
+    "id": "45c91101-bea4-4093-be84-3ccd4dcd4212",
+    "text": "{ m[i][k] + m[k+1][j] + p[i-1]*p[k]*p[j] }\nWhere p[] = dimension array (matrix A_i has dimensions p[i-1] × p[i])\nDry Run\n4 Matrices: A1(10×30), A2(30×5), A3(5×60), A4(60×10)\nDimension array: p = [10, 30, 5, 60, 10]\nBase: m[1][1]=m[2][2]=m[3][3]=m[4][4]=0\nLength 2 chains:\nm[1][2] = p[0]*p[1]*p[2] = 10*30*5 = 1500\nm[2][3] = p[1]*p[2]*p[3] = 30*5*60 = 9000\nm[3][4] = p[2]*p[3]*p[4] = 5*60*10 = 3000\nLength 3 chains:\nm[1][3]: k=1: m[1][1]+m[2][3]+10*30*60 = 0+9000+18000 = 27000"
+  },
+  {
+    "id": "55142037-c3b5-43f5-9d5c-966df6514381",
+    "text": "k=2: m[1][2]+m[3][3]+10*5*60 = 1500+0+3000 = 4500 ← min\nm[1][3] = 4500\nm[2][4]: k=2: m[2][2]+m[3][4]+30*5*10 = 0+3000+1500 = 4500 ← min\nk=3: m[2][3]+m[4][4]+30*60*10= 9000+0+18000 = 27000\nm[2][4] = 4500\nLength 4 chain:\nm[1][4]: k=1: m[1][1]+m[2][4]+10*30*10 = 0+4500+3000 = 7500\nk=2: m[1][2]+m[3][4]+10*5*10 = 1500+3000+500 = 5000\nk=3: m[1][3]+m[4][4]+10*60*10 = 4500+0+6000 = 10500\nm[1][4] = 5000 (split at k=2: (A1×A2)×(A3×A4))\nComplexity\nTime \tO(n³)"
+  },
+  {
+    "id": "d74462a9-e6b9-4dd6-9482-589c6b3672ad",
+    "text": "Space \tO(n²)\nOutput \tMinimum multiplications + optimal\nparenthesization\nProbable Exam Questions\n16. Find minimum cost of multiplying matrices with given dimensions (show full DP table).\n17. What is the optimal parenthesization? Construct from the s[][] table.\n18. Why is the naive approach O(exponential) while DP is O(n³)?\n19. Application: Why is matrix chain multiplication important in compiler optimizations?"
+  },
+  {
+    "id": "72820a57-6a6b-4d67-8402-673acfd6be95",
+    "text": "3.6 Optimal Binary Search Trees (OBST)\nGiven keys k1<k2<...<kn with search probabilities p[] and dummy key probabilities q[], construct a BST\nthat minimizes expected search cost.\nFormulation\ne[i][j] = expected cost of optimal BST for keys k_i ... k_j\nw[i][j] = sum of all probabilities in range (weight)\nw[i][j] = w[i][j-1] + p[j] + q[j]\ne[i][j] = min over all r (i ≤ r ≤ j):\n{ e[i][r-1] + e[r+1][j] + w[i][j] }\nBase: e[i][i-1] = q[i-1]; w[i][i-1] = q[i-1]\nDry Run"
+  },
+  {
+    "id": "d9cd06b9-6917-404f-9810-86c151a5ac37",
+    "text": "Dry Run\nKeys: k1=10, k2=20, k3=30 | p=[0.3, 0.3, 0.1] | q=[0.05, 0.1, 0.05, 0.1]\nBase cases (length 0):\ne[1][0]=q[0]=0.05, e[2][1]=q[1]=0.10, e[3][2]=q[2]=0.05, e[4][3]=q[3]=0.10\nLength 1:\ne[1][1]: root=k1: e[1][0]+e[2][1]+w[1][1]\nw[1][1] = q[0]+p[1]+q[1] = 0.05+0.3+0.1 = 0.45\ne[1][1] = 0.05+0.10+0.45 = 0.60\ne[2][2]: w[2][2]=q[1]+p[2]+q[2]=0.10+0.3+0.05=0.45\ne[2][2] = 0.10+0.05+0.45 = 0.60\ne[3][3]: w[3][3]=q[2]+p[3]+q[3]=0.05+0.1+0.10=0.25\ne[3][3] = 0.05+0.10+0.25 = 0.40\nLength 2:"
+  },
+  {
+    "id": "e8f925b1-76a5-4544-b29a-37d99723c2d5",
+    "text": "e[3][3] = 0.05+0.10+0.25 = 0.40\nLength 2:\ne[1][2]: w[1][2]=w[1][1]+p[2]+q[2]=0.45+0.3+0.05=0.80\nr=k1: e[1][0]+e[2][2]+0.80 = 0.05+0.60+0.80 = 1.45\nr=k2: e[1][1]+e[3][2]+0.80 = 0.60+0.05+0.80 = 1.45\ne[1][2] = 1.45 (either root)\nProbable Exam Questions\n20. Construct OBST for given keys and probabilities. Find minimum expected cost.\n21. What is the difference between successful and unsuccessful search probabilities?\n22. Compare OBST with a randomly built BST in terms of expected search time."
+  },
+  {
+    "id": "41267342-6bc9-4ca6-9966-c1752e76d267",
+    "text": "3.7 0/1 Knapsack Problem\nGiven n items, each with weight w[i] and value v[i], and a knapsack of capacity W: select items (each at\nmost once) to maximize total value without exceeding W.\nDP Formulation\ndp[i][w] = max value using first i items with capacity w\nRecurrence:\nif w[i] > w: dp[i][w] = dp[i-1][w] \t// can't include item i\nelse: \tdp[i][w] = max(dp[i-1][w], // exclude item i\ndp[i-1][w-w[i]] + v[i]) // include item i\nBase: dp[0][w] = 0 for all w; dp[i][0] = 0 for all i\nDry Run"
+  },
+  {
+    "id": "2fadbcd6-f817-4318-9862-3d5627d7a05f",
+    "text": "Dry Run\nItems: (w=2,v=6), (w=2,v=10), (w=3,v=12) | W=5\nw=0 w=1 w=2 w=3 w=4 w=5\ni=0: 0 \t0 \t0 \t0 \t0 \t0\ni=1(w=2,v=6):\n0 \t0 \t6 \t6 \t6 \t6\ni=2(w=2,v=10):\nw<2: 0 \t0 (exclude: 6, include: 10) → 10\n0 \t0 10 16 16 16\ni=3(w=3,v=12):\nw=3: max(16, dp[2][0]+12) = max(16,12) = 16\nw=4: max(16, dp[2][1]+12) = max(16,12) = 16\nw=5: max(16, dp[2][2]+12) = max(16,22) = 22\n0 \t0 10 16 16 22\nMaximum Value = dp[3][5] = 22\nSelected items: item 2 (w=2,v=10) + item 3 (w=3,v=12)\nBacktracking the Solution"
+  },
+  {
+    "id": "74636ae3-4e7b-4b6e-babe-f7928e6a4903",
+    "text": "Backtracking the Solution\nStart at dp[n][W]. If dp[i][w] ≠ dp[i-1][w], item i is selected; move to dp[i-1][w-w[i]].\nComplexity\nTime \tO(n × W)\nSpace \tO(n × W) or O(W) optimized\nType \tPseudo-polynomial\nProbable Exam Questions\n23. Fill the DP table for given weights, values, and capacity. Find selected items.\n24. Why is 0/1 Knapsack NP-Hard but solvable in O(nW)? Explain pseudo-polynomial.\n25. Distinguish 0/1 Knapsack (DP) from Fractional Knapsack (Greedy)."
+  },
+  {
+    "id": "c404ae44-2cac-4503-89dd-9c2235b9f761",
+    "text": "26. Application: Resource allocation in project management."
+  },
+  {
+    "id": "c3387025-33ea-4aee-82e2-39e9642cc1c5",
+    "text": "3.8 Reliability Design\nGiven m device types in a series system, and cost/reliability per device, choose the number of devices\nof each type (with device replication in parallel) to maximize system reliability subject to a budget\nconstraint.\nConcept\n• A system has m stages in series; each stage can have ri copies in parallel.\n• Stage reliability: 1 - (1 - φ_i)^r_i\n• System reliability: Product of all stage reliabilities.\nDP Formulation\nf(j, x) = maximum reliability of first j stages with cost x"
+  },
+  {
+    "id": "c2f7df09-7294-4adc-872d-03a662de0a2f",
+    "text": "f(j, x) = max over r_j (1 ≤ r_j ≤ max possible):\n{ (1 - (1-φ_j)^r_j) × f(j-1, x - c_j×r_j) }\nConstraints: Σ c_i × r_i ≤ C (budget)\nExample\n3-stage system, budget C=10. Stages: φ=[0.9, 0.8, 0.5], costs=[1.2, 1.5, 0.5]\nTry different allocations satisfying budget:\nr=[1,1,1]: cost=3.2, rel=(0.9)(0.8)(0.5)=0.360\nr=[2,1,2]: cost=2.4+1.5+1.0=4.9, rel=(0.99)(0.8)(0.75)=0.594\nr=[2,2,3]: cost=2.4+3.0+1.5=6.9, rel=(0.99)(0.96)(0.875)=0.831\nr=[3,2,3]: cost=3.6+3.0+1.5=8.1, rel=(0.999)(0.96)(0.875)=0.839"
+  },
+  {
+    "id": "8a494fe4-c3d1-4dd2-8628-ae125f01bb74",
+    "text": "Best within budget C=10: r=[3,2,4]: check cost & maximize\nProbable Exam Questions\n27. Find optimal number of parallel devices for each stage to maximize system reliability.\n28. Why is reliability design similar to 0/1 Knapsack?\n29. Application: Satellite systems, RAID storage, fault-tolerant computing."
+  },
+  {
+    "id": "cdad50f8-58e0-42c6-8211-8522adf4c67d",
+    "text": "3.9 Traveling Salesman Problem (DP — Held-Karp)\nFind the shortest Hamiltonian cycle — a tour visiting every city exactly once and returning to start. DP\nwith bitmask reduces brute-force O(n!) to O(n² × 2ⁿ).\nDP Formulation (Held-Karp)\ndp[S][i] = minimum cost to reach city i, having visited exactly\nthe set S of cities (starting from city 0)\nBase: dp[{0}][0] = 0\nRecurrence:\ndp[S][i] = min over all j in S (j ≠ i):\n{ dp[S - {i}][j] + dist[j][i] }"
+  },
+  {
+    "id": "f1c84f94-40e6-42af-88c3-c2bf6660c6d0",
+    "text": "{ dp[S - {i}][j] + dist[j][i] }\nAnswer: min over all i ≠ 0: { dp[{0,1,...,n-1}][i] + dist[i][0] }\nDry Run (4 cities: 0,1,2,3)\nCost matrix:\n0 \t1 \t2 \t3\n0 [ 0 10 15 20 ]\n1 [10 \t0 35 25 ]\n2 [15 35 \t0 30 ]\n3 [20 25 30 \t0 ]\ndp[{0,1}][1] = dp[{0}][0] + dist[0][1] = 0+10 = 10\ndp[{0,2}][2] = 0+15 = 15\ndp[{0,3}][3] = 0+20 = 20\ndp[{0,1,2}][2] = dp[{0,1}][1] + dist[1][2] = 10+35 = 45\ndp[{0,1,2}][1] = dp[{0,2}][2] + dist[2][1] = 15+35 = 50\ndp[{0,1,2,3}][3]: via 2: dp[{0,1,2}][2]+dist[2][3]=45+30=75"
+  },
+  {
+    "id": "7b65f207-e701-4723-82b5-887c7f615282",
+    "text": "via 1: dp[{0,1,3}][1]+dist[1][3] ...\nFinal answer: dp[all][i]+dist[i][0] for all i, take minimum\nOptimal tour: 0→1→3→2→0 Cost = 10+25+30+15 = 80\nComplexity\nTime \tO(n² × 2ⁿ)\nSpace \tO(n × 2ⁿ)\nvs Brute Force \tO(n!) reduced significantly\nProbable Exam Questions\n30. Solve TSP using DP for a 4-city cost matrix. Show dp table.\n31. Compare DP-TSP with Greedy nearest-neighbor heuristic.\n32. Application: Logistics route planning, PCB drilling, DNA sequencing."
+  },
+  {
+    "id": "9c00bac4-4798-4dda-880c-a22dbeba5781",
+    "text": "UNIT IV: BACKTRACKING & BRANCH AND BOUND\nPART A: BACKTRACKING\n4.1 The General Method\nBacktracking is a systematic way to iterate through all possible configurations of a search space. It\nbuilds candidates incrementally and abandons (backtracks) a candidate as soon as it determines the\ncandidate cannot lead to a valid solution.\nState Space Tree\n• Each node represents a partial solution.\n• Root = empty solution; leaves = complete solutions or dead ends."
+  },
+  {
+    "id": "d2e0713b-6c6f-4c6d-9ab4-d31577f227c8",
+    "text": "• Pruning: Branches that violate constraints are cut off early.\nBacktrack(state):\nif isGoal(state): record/return solution\nfor each choice c in generateCandidates(state):\nif isPromising(state + c): // bounding function\napply choice c\nBacktrack(state + c)\nundo choice c \t// BACKTRACK\nKey Concept: Backtracking = DFS on state-space tree with pruning. The\nbounding/promising function is what makes it efficient.\n4.2 The 8-Queens Problem"
+  },
+  {
+    "id": "cc44368d-5b9f-4df3-bda9-5d63c171c728",
+    "text": "4.2 The 8-Queens Problem\nPlace 8 queens on an 8×8 chessboard such that no two queens threaten each other (no two queens in\nthe same row, column, or diagonal).\nConstraint Checks\nPlace queens one per row. For queen in row r, column c:\n1. No other queen in column c\n2. No other queen on diagonal: |r1-r2| ≠ |c1-c2|\nIsPromising(row, col):\nfor i = 1 to row-1:\nif col == placed[i] \t// same column\nor |row - i| == |col - placed[i]| // diagonal\nreturn false\nreturn true\nDry Run (4-Queens, 4×4 board)"
+  },
+  {
+    "id": "e88243d9-253a-46d6-a5ae-e6330d01aee7",
+    "text": "Row 1: Try col 1 → place Q at (1,1)\nRow 2: col 1 → conflict (same col). col 2 → diagonal conflict.\ncol 3 → OK. Place Q at (2,3)\nRow 3: col 1 → diagonal (2,3)-(3,1) |2-3|=1=|3-1|? NO. Place (3,1)\nRow 4: col 1 → conflict. col 2 → diagonal with (3,1)? NO. Place (4,2)? Check:\n(1,1)-(4,2): |1-4|=3≠|1-2|=1. OK. (2,3)-(4,2): |2-4|=2=|3-2|=1? NO.\nPlace Q at (4,2). Wait: check all: (3,1)-(4,2): |1|=|1| → DIAGONAL!\ncol 3 → conflicts. col 4 → check...\nBacktrack to Row 3... try col 2, col 4..."
+  },
+  {
+    "id": "557bd3c3-ef34-4ea0-b43d-c554070351d2",
+    "text": "Backtrack to Row 3... try col 2, col 4...\nFirst solution found: Q at cols [2, 4, 1, 3]\nBoard: _ Q _ _\n_ _ _ Q\nQ _ _ _\n_ _ Q _\nStatistics\nSolutions for 8-Queens \t92 solutions\nFundamental solutions \t12 (excluding rotations/reflections)\nState-space nodes \t~15,720 visited (vs. 8^8 = 16M brute force)\nProbable Exam Questions\n33. Place 4-queens on a 4×4 board using backtracking. Draw the state-space tree.\n34. Write the IsPromising function for the n-queens problem."
+  },
+  {
+    "id": "4293a7e3-0e5b-4b8d-aa10-75172df4259d",
+    "text": "35. How many solutions exist for 8-queens? Why is backtracking efficient here?"
+  },
+  {
+    "id": "46220138-ea7b-4fbb-9030-27878c10387c",
+    "text": "4.3 Graph Coloring\nAssign colors to vertices of a graph such that no two adjacent vertices have the same color, using at\nmost m colors. Find if it's possible (m-colorability) and find all colorings.\nAlgorithm\nGraphColor(v, colors[]): // v = current vertex (1 to n)\nfor each color c in 1..m:\nif isPromising(v, c):\ncolors[v] = c\nif v == n: print solution\nelse: GraphColor(v+1, colors)\nisPromising(v, c):\nfor each neighbor u of v:\nif colors[u] == c: return false\nreturn true\nDry Run"
+  },
+  {
+    "id": "566b50a0-163f-4012-aedf-1ea08c7bb484",
+    "text": "return true\nDry Run\nGraph: 4 vertices, edges: (1,2),(2,3),(3,4),(4,1),(1,3). m=3 colors {R,G,B}\nv=1: assign R. colors=[R,_,_,_]\nv=2: adj to 1(R). Try G. colors=[R,G,_,_]\nv=3: adj to 2(G) and 1(R). Try B. colors=[R,G,B,_]\nv=4: adj to 3(B) and 1(R). Try G. colors=[R,G,B,G] ✓\n→ Solution found: [R,G,B,G]\nContinuing to find more: backtrack from v=4, try B for v=4...\nv=4: B is adj to 3(B) → no. Dead end.\nBacktrack to v=3: try R? adj to 1(R)→no. Dead end.\nContinue until all valid 3-colorings found."
+  },
+  {
+    "id": "fc7734c9-eb6d-430b-8d5f-563647131201",
+    "text": "Continue until all valid 3-colorings found.\nChromatic Number\nThe minimum m for which a graph is m-colorable is the chromatic number χ(G). Planar graphs: χ(G) ≤ 4\n(Four Color Theorem).\nProbable Exam Questions\n36. Color a given graph with m colors using backtracking. Show all solutions.\n37. Find the chromatic number of a given graph.\n38. Application: Register allocation in compilers, map coloring, scheduling."
+  },
+  {
+    "id": "74112c37-0e47-4269-9bcc-1ca00dab8263",
+    "text": "4.4 Hamiltonian Cycles\nA Hamiltonian cycle visits every vertex of a graph exactly once and returns to the starting vertex.\nFinding if one exists is NP-Complete.\nAlgorithm\nHamiltonian(path[], pos):\nif pos == n: // all vertices added\nif edge exists from path[pos-1] to path[0]: FOUND\nelse: return false\nfor each vertex v not in path:\nif isPromising(v, path, pos): // edge from path[pos-1] to v?\npath[pos] = v\nif Hamiltonian(path, pos+1): return true\npath[pos] = -1 // backtrack\nreturn false\nDry Run"
+  },
+  {
+    "id": "de8f1015-7a79-48f0-a022-6aad0cb8e2c0",
+    "text": "path[pos] = -1 // backtrack\nreturn false\nDry Run\nGraph: 5 vertices, edges: 0-1, 0-3, 1-2, 1-4, 2-3, 3-4, 2-4\nStart at 0. path=[0,_,_,_,_]\npos=1: try 1 (edge 0-1 exists). path=[0,1,_,_,_]\npos=2: try 2 (edge 1-2 exists). path=[0,1,2,_,_]\npos=3: try 3 (edge 2-3 exists). path=[0,1,2,3,_]\npos=4: try 4 (edge 3-4 exists). path=[0,1,2,3,4]\nCheck return edge: 4→0? NOT in edge list. Backtrack.\npos=4: no more options. Backtrack to pos=3.\npos=3: try 4 (edge 2-4 exists). path=[0,1,2,4,_]"
+  },
+  {
+    "id": "43784f6c-961c-4221-93a3-528e014f4325",
+    "text": "pos=3: try 4 (edge 2-4 exists). path=[0,1,2,4,_]\npos=4: try 3 (edge 4-3 exists). path=[0,1,2,4,3]\nCheck return: 3→0? Edge 0-3 exists! ✓\nHamiltonian Cycle: 0→1→2→4→3→0\nProbable Exam Questions\n39. Find Hamiltonian cycle in a given graph using backtracking.\n40. Distinguish Hamiltonian cycle from Eulerian circuit.\n41. Why is Hamiltonian cycle NP-Complete? Relate to TSP."
+  },
+  {
+    "id": "2f07f466-ecba-4b44-a014-6394a5123e4f",
+    "text": "4.5 Knapsack Problem — Backtracking\nUnlike DP (0/1 Knapsack), backtracking explores the state space tree and uses a bounding function to\nprune branches.\nBounding Function\nCompute upper bound: take fractional part of next item\nbound = current_value + (remaining_capacity / w[k]) * v[k]\n// Greedy upper estimate using fractional knapsack\nIf bound ≤ best_so_far: PRUNE (don't explore this branch)\nDry Run\nItems sorted by v/w: (v=40,w=2), (v=30,w=5), (v=50,w=10), (v=10,w=5). W=16"
+  },
+  {
+    "id": "b113570d-c9ef-4561-9d7a-a4e22ef4375b",
+    "text": "Root: profit=0, weight=0, bound = 0 + (16/2)*40 = 320\nLevel 1 (item 1: include/exclude):\nInclude: profit=40, weight=2, bound = 40+(14/5)*30 = 124\nExclude: profit=0, weight=0, bound = (16/2)*40 = 320... prune later\nBest solution found iteratively:\nInclude item1(40) + item2(30) + item3(partial): bound guides search\nFinal best: items 1,2,3 if weight ≤ 16 → 40+30+50=120 (w=17>16)\nBest feasible: items 1+2+4 = 40+30+10=80, w=12 OR items 1+3=90, w=12\nOptimal: 90 (items 1 and 3)\nProbable Exam Questions"
+  },
+  {
+    "id": "82a7a38d-a175-44f1-9976-fc97783f6d34",
+    "text": "Probable Exam Questions\n42. Solve knapsack using backtracking. Draw state-space tree with pruning.\n43. Compare backtracking vs DP for 0/1 Knapsack — which is better when?\n44. Why sort by v/w ratio before applying backtracking for knapsack?"
+  },
+  {
+    "id": "5b7b9ee5-aaaf-4146-8752-1bb5696d0e6c",
+    "text": "PART B: BRANCH AND BOUND\n4.6 Branch and Bound — General Method\nBranch and Bound (B&B) is used for optimization problems. Unlike backtracking (which uses DFS),\nB&B uses BFS or Best-First search and a cost bounding function to guide exploration.\nKey Differences: Backtracking vs Branch & Bound\nFeature \tBacktracking \tBranch & Bound\nGoal \tFind any/all feasible solutions \tFind optimal solution\nTraversal \tDFS \tBFS / Best-First (LC-BB)\nBounding \tFeasibility check \tCost bound (upper/lower)"
+  },
+  {
+    "id": "da6abea0-91d0-4012-8e9d-58af023d1e4d",
+    "text": "Problems \tDecision problems \tOptimization problems\nB&B Framework\n1. Start with root node in priority queue (min-heap for minimization)\n2. Extract node with best bound\n3. Branch: generate children by adding one decision\n4. Bound: compute upper/lower bound for each child\n5. Prune: if bound ≥ current best (for min), discard\n6. Update best if a complete feasible solution found\n7. Repeat until queue empty\n4.7 Branch and Bound — 0/1 Knapsack"
+  },
+  {
+    "id": "5f2fd138-8120-404a-b66b-d12b418435fb",
+    "text": "4.7 Branch and Bound — 0/1 Knapsack\nUse upper bound = current profit + fractional profit of remaining items (like fractional knapsack).\nMaximize profit.\nUpper Bound Calculation\nupperBound(node):\nbound = node.profit\nremaining_cap = node.weight\nj = next item after node.level\nwhile j ≤ n and remaining_cap + w[j] ≤ W:\nbound += v[j]; remaining_cap += w[j]; j++\n// fractional part of next item\nif j ≤ n:\nbound += (W - remaining_cap) * (v[j]/w[j])\nreturn bound\nDry Run"
+  },
+  {
+    "id": "4aa820b9-8c9f-4eb7-befd-11d6bad93040",
+    "text": "return bound\nDry Run\nItems (sorted by v/w): I1(v=40,w=2,r=20), I2(v=30,w=5,r=6), I3(v=50,w=10,r=5). W=16"
+  },
+  {
+    "id": "99420ea0-a5b4-4671-8421-49ba64c7cddc",
+    "text": "Node A (root): profit=0, weight=0\nUB = 0 + 40 + 30 + (16-7)/10*50 = 0+40+30+45 = 115\nBranch A: Include I1 vs Exclude I1\nNode B (include I1): profit=40, weight=2, UB=115\nNode C (exclude I1): profit=0, weight=0\nUB = (16/5)*30 = 96\nBest First: pick B (UB=115)\nNode D (B+I2): profit=70, weight=7, UB=70+(9/10)*50=115\nNode E (B-I2): profit=40, weight=2\nUB = 40+(16-2)/10*50 = 40+70=110\nPick D: Node F (D+I3): profit=120, weight=17 > 16! INFEASIBLE\nNode G (D-I3): profit=70, weight=7 → FEASIBLE. Best=70"
+  },
+  {
+    "id": "75f509a8-fe3d-4a59-9344-0d37752a9df8",
+    "text": "Continue exploring E... eventually best=90 (I1+I3)\nProbable Exam Questions\n45. Apply B&B to solve 0/1 Knapsack. Draw exploration tree with bounds.\n46. What is the advantage of using Best-First B&B over FIFO or LIFO?\n47. Compare B&B 0/1 Knapsack with DP — which is preferred for large n, small W?"
+  },
+  {
+    "id": "2d4e21c2-2bf9-46d5-916e-3782ec0ff95d",
+    "text": "4.8 Branch and Bound — Traveling Salesperson Problem\nFind the minimum-cost Hamiltonian cycle. B&B uses a lower bound based on reduced cost matrix.\nCost Matrix Reduction\nRow Reduction: subtract minimum of each row from all elements in that row\nCol Reduction: subtract minimum of each col from all elements in that col\nLower Bound = sum of all row-min + sum of all col-min\nFor each edge (i,j) added to tour:\nSet row i and col j to ∞, set path[j][source] = ∞"
+  },
+  {
+    "id": "548d5ce6-2eb1-4bae-82c1-3ab9be700598",
+    "text": "Set row i and col j to ∞, set path[j][source] = ∞\nReduce new matrix → new LB = parent LB + reduction cost + cost(i,j)\nDry Run (4 cities)\nCost Matrix: \tA \tB \tC \tD\nA [ ∞ 20 30 10 ]\nB [ 15 ∞ 16 4 ]\nC [ 3 5 \t∞ 2 ]\nD [ 19 6 \t18 ∞ ]\nRow reduce: Row A: subtract 10 → [∞,10,20,0]\nRow B: subtract 4 → [11,∞,12,0]\nRow C: subtract 2 → [1, 3,∞, 0]\nRow D: subtract 6 → [13,0,12, ∞]\nRow reduction cost = 10+4+2+6 = 22\nCol reduce: col A: min=1, col B: 0, col C: 12, col D: 0\nCol reduction cost = 1+0+12+0 = 13"
+  },
+  {
+    "id": "000d876a-3d7f-4ddb-a6f1-e857fc409c6b",
+    "text": "Col reduction cost = 1+0+12+0 = 13\nInitial Lower Bound = 22+13 = 35\nBranch on A→B: LB(AB) = 35 + 0(cost A→B after reduction) + matrix re-reduction\nContinue branching... minimum cost tour found via B&B exploration\nProbable Exam Questions\n48. Apply B&B to a 4-city TSP. Show matrix reduction and lower bounds.\n49. How does matrix reduction provide a valid lower bound for TSP?\n50. Compare B&B TSP with Held-Karp DP for TSP."
+  },
+  {
+    "id": "4b5aa766-cd43-4041-8698-0bc573f7b510",
+    "text": "UNIT V: NP-HARD AND NP-COMPLETENESS\n5.1 Basic Concepts\nComplexity Classes\nClass \tDefinition\nP \tProblems solvable in polynomial time O(nᵏ)\nNP \tProblems verifiable in polynomial time\n(Non-deterministic Polynomial)\nNP-Hard \tAt least as hard as hardest problems in NP (not\nnecessarily in NP)\nNP-Complete \tIn NP AND NP-Hard (hardest problems in NP)\nThe Million Dollar Question: Is P = NP? If any NP-Complete problem has a polynomial\nsolution, all do. Currently unresolved.\nKey Relationships"
+  },
+  {
+    "id": "3e4d176f-338c-4a51-9ad8-1deba9a90dd0",
+    "text": "Key Relationships\nP ⊆ NP ⊆ NP-Hard\nNP-Complete = NP ∩ NP-Hard\nIf problem X is NP-Complete:\n- X ∈ NP (can verify solution in polynomial time)\n- Every problem in NP reduces to X in polynomial time\nPolynomial Reduction (≤p)\nProblem A reduces to Problem B (A ≤p B) if: given a polynomial-time solver for B, we can solve A in\npolynomial time. This means B is at least as hard as A.\nProving NP-Completeness\n51. Step 1: Show problem ∈ NP (verify solution in poly time)."
+  },
+  {
+    "id": "3caa48b4-e01e-480f-9eb0-24c932df9267",
+    "text": "52. Step 2: Reduce a known NP-Complete problem to your problem in polynomial time.\nFirst NP-Complete Problem: SAT (Boolean Satisfiability) — proven by Cook's Theorem,\n1971. All NP-Complete proofs trace back to SAT.\nNP-Complete Problem Chain\nSAT → 3-SAT → Clique → Independent Set → Vertex Cover\n→ Hamiltonian Cycle → TSP"
+  },
+  {
+    "id": "5dc74d41-dd2f-42d2-b7a8-b82175e1f5be",
+    "text": "→ Graph Coloring\nSAT → 3-SAT → Subset Sum → Knapsack\n→ Partition → Bin Packing\nProbable Exam Questions\n53. Define P, NP, NP-Hard, NP-Complete with examples.\n54. What is polynomial reduction? How is it used to prove NP-Completeness?\n55. Prove that if any NP-Complete problem is in P, then P=NP.\n56. State Cook's Theorem and its significance."
+  },
+  {
+    "id": "174f9269-b226-493d-8375-1f34138cd324",
+    "text": "5.2 NP-Hard Graph Problems\n5.2.1 Clique Decision Problem\nA clique in an undirected graph is a subset of vertices where every pair is connected by an edge. The\nClique Decision Problem asks: Does G contain a clique of size k?\nWhy NP?\n• Verification: Given a subset S of k vertices, check all C(k,2) pairs in O(k²) — polynomial.\n• Decision: Finding if clique of size k exists is NP-Complete.\nNP-Completeness Proof Sketch\nReduce 3-SAT → Clique:\nGiven 3-CNF formula with k clauses:"
+  },
+  {
+    "id": "94b42c6e-20b0-44ef-8dcf-f5daea1c0b20",
+    "text": "Given 3-CNF formula with k clauses:\n1. For each literal in each clause, create a vertex\n2. Connect vertices from DIFFERENT clauses unless they are\nnegations of each other (e.g., x and ¬x are NOT connected)\n3. Formula is satisfiable ⟺ graph has a clique of size k\nThis is a polynomial transformation, proving Clique is NP-Hard.\nExample\nFormula: (x₁ ∨ ¬x₂ ∨ x₃) ∧ (¬x₁ ∨ x₂ ∨ x₄) ∧ (x₁ ∨ x₂ ∨ ¬x₃)\nk=3 clauses → need clique of size 3. Select one literal from each clause such that no selected pair is"
+  },
+  {
+    "id": "31b6ae4a-a0d7-4c4a-95a2-8cbf0a4dea8d",
+    "text": "complementary.\nSolution: x₁ from clause 1, x₂ from clause 2, x₁ from clause 3 → satisfying assignment exists.\nProbable Exam Questions\n57. Explain the Clique Decision Problem and prove it is NP-Complete.\n58. Find maximum clique in a given small graph.\n59. Show the reduction from 3-SAT to Clique."
+  },
+  {
+    "id": "6c6a2d7b-6255-4112-b75e-3fb39a770e09",
+    "text": "5.2.2 Node Cover (Vertex Cover) Decision Problem\nA vertex cover of a graph G is a set S of vertices such that every edge in G has at least one endpoint in\nS. Decision: Does G have a vertex cover of size ≤ k?\nKey Relationship\nComplement Property: S is a vertex cover of G ⟺ V-S is an independent set of G. Also: Minimum\nVertex Cover + Maximum Independent Set = |V|.\nNP-Completeness Proof\nReduce Clique → Vertex Cover (via complement graph):\n1. Given graph G and clique size k"
+  },
+  {
+    "id": "1b07923a-3a3e-4aa6-8b04-fe91fcc0fc38",
+    "text": "1. Given graph G and clique size k\n2. Construct complement graph Ḡ (edges where G has none and vice versa)\n3. G has a clique of size k ⟺ Ḡ has a vertex cover of size n-k\nThis is a polynomial reduction → Vertex Cover is NP-Hard\nVertex Cover ∈ NP (verify: check all edges covered in poly time)\nTherefore, Vertex Cover is NP-Complete\n2-Approximation Algorithm\nWhile uncovered edge (u,v) exists:\nAdd both u and v to cover\nRemove all edges incident to u or v"
+  },
+  {
+    "id": "b4bd4dd5-871b-4109-b37c-1f50fe45f4e4",
+    "text": "Remove all edges incident to u or v\nThis gives ≤ 2× optimal solution size in O(V+E) time\nProbable Exam Questions\n60. Define vertex cover. Find minimum vertex cover of a given graph.\n61. Prove Vertex Cover is NP-Complete using reduction from Clique.\n62. What is the relationship between Vertex Cover, Independent Set, and Clique?\n63. Application: Network monitoring — minimum sensors to cover all communication links."
+  },
+  {
+    "id": "4f42d824-4a17-44f1-bdba-22a242d80101",
+    "text": "5.3 NP-Hard Scheduling Problems\n5.3.1 Scheduling on Identical Processors\nGiven n jobs with processing times p₁, p₂, ..., p\u0000 and m identical machines (processors), assign jobs to\nmachines to minimize the makespan (maximum completion time).\nProblem Formulation\nMinimize: Cmax = max(load on any machine)\nwhere load[k] = sum of p[i] for all jobs i on machine k\nOptimal Lower Bound: LB = max(max(p[i]), ceil(Σp[i]/m))\nThis problem (even for m=2) is NP-Hard via reduction from Partition:"
+  },
+  {
+    "id": "12a37b69-7bbe-4527-b0c3-c15df55601b3",
+    "text": "Partition: Given S={a1..an}, can we split into two equal-sum subsets?\nReduce to 2-machine scheduling: equal partition ⟺ Cmax = Σai/2\nApproximation: List Scheduling (LPT)\nLPT (Longest Processing Time first):\n1. Sort jobs in decreasing order of processing time\n2. Assign each job to the machine with the current minimum load\nApproximation ratio: LPT ≤ (4/3 - 1/(3m)) × OPT\nDry Run — LPT with 3 machines, 6 jobs\nJobs: p = [6, 5, 5, 4, 4, 3] (already sorted desc). Machines: M1, M2, M3"
+  },
+  {
+    "id": "67c744f8-9d2c-4a23-b346-fab6ba3307df",
+    "text": "Job 1 (p=6): assign M1. Loads: [6, 0, 0]\nJob 2 (p=5): assign M2. Loads: [6, 5, 0]\nJob 3 (p=5): assign M3. Loads: [6, 5, 5]\nJob 4 (p=4): assign M2 (min=5). Loads: [6, 9, 5]\nJob 5 (p=4): assign M3 (min=5). Loads: [6, 9, 9]\nJob 6 (p=3): assign M1 (min=6). Loads: [9, 9, 9]\nMakespan = 9 (optimal since Σ=27, 27/3=9)\nProbable Exam Questions\n64. Apply LPT scheduling to a given job set on m machines. Find makespan.\n65. Prove that the multiprocessor scheduling problem is NP-Hard via Partition reduction."
+  },
+  {
+    "id": "6681e751-f981-4bc3-b268-a686bf7f256b",
+    "text": "66. What is the approximation ratio of LPT? Show a case where LPT is not optimal."
+  },
+  {
+    "id": "ff2b6be4-e239-49db-acbe-7fe1999af1ca",
+    "text": "5.4 NP-Hard Code Scheduling — Code Generation with Common\nSubexpressions\nThis involves generating optimal machine code with register allocation, especially when expressions\nshare common subexpressions. The goal is to minimize the number of instructions or registers used.\nCore Problem\n• DAG representation: An expression can be represented as a Directed Acyclic Graph where\nshared nodes are common subexpressions (CSE)."
+  },
+  {
+    "id": "3f94c5a4-a0b0-4b76-ad4c-1abfb024f7da",
+    "text": "shared nodes are common subexpressions (CSE).\n• Register allocation: Determine order to evaluate DAG nodes to minimize register spills\n(storing/loading from memory).\n• NP-Hardness: Optimal code generation from a DAG (with limited registers) is NP-Hard.\nExample: Expression DAG\nExpression: (a+b) * c + (a+b) * d\nDAG: \t* \t*\n/ \\ \t/ \\\n(a+b) c (a+b) d\n\\ \t/\n(a+b) \t← shared CSE\nWithout CSE recognition: compute (a+b) twice → wasteful\nWith CSE: compute (a+b) once, store in register, reuse"
+  },
+  {
+    "id": "6e7755dc-68bb-4301-8608-94a211f473b1",
+    "text": "Optimal code (2 registers):\nR1 = a + b \t(compute CSE once)\nR2 = R1 * c \t(first multiply)\nR1 = R1 * d \t(reuse R1 for second multiply)\nR1 = R2 + R1 \t(final addition)\nSethi-Ullman Algorithm\nAssigns labels (register requirements) to expression tree nodes to minimize register usage.\nLabel(node):\nif node is leaf:\nreturn 1 if first occurrence, else 0\nif left.label == right.label:\nreturn left.label + 1\nelse:\nreturn max(left.label, right.label)"
+  },
+  {
+    "id": "8e7ba0f3-c3e9-4f79-8d1a-27c1ec411222",
+    "text": "else:\nreturn max(left.label, right.label)\nCode generation uses this labeling to choose evaluation order\nso that the child requiring more registers is evaluated first.\nNP-Hardness Connection\nGeneral code scheduling (with branches, shared subexpressions, and limited registers) is NP-Hard.\nThis is related to:"
+  },
+  {
+    "id": "312e1d8e-954b-4c29-bae3-ffc574f0b4f8",
+    "text": "• Graph coloring for register allocation (chromatic number problem)\n• Optimal DAG evaluation order with k registers\nProbable Exam Questions\n67. Construct the DAG for an expression with common subexpressions and generate optimal code.\n68. Apply Sethi-Ullman labeling algorithm to an expression tree.\n69. Why is optimal code generation NP-Hard? What is its relationship to graph coloring?\n70. What is the role of register allocation in code scheduling? How does limited registers affect\nscheduling?"
+  },
+  {
+    "id": "cf47cee0-e782-43e7-b6db-8dd91af7b432",
+    "text": "QUICK REFERENCE SUMMARY\nAlgorithm Complexity Summary\nAlgorithm \tTime Complexity \tSpace Complexity\nBellman-Ford \tO(V×E) \tO(V)\nFloyd-Warshall \tO(n³) \tO(n²)\nMatrix Chain Mult. \tO(n³) \tO(n²)\n0/1 Knapsack (DP) \tO(n×W) \tO(n×W)\nMultistage Graph \tO(V+E) \tO(V)\nOBST \tO(n³) \tO(n²)\nTSP (Held-Karp) \tO(n²×2ⁿ) \tO(n×2ⁿ)\n8-Queens (Backtracking) \tO(n!) pruned \tO(n)\nGraph Coloring \tO(mⁿ) pruned \tO(n)\nHamiltonian Cycle \tO(n!) pruned \tO(n)\nNP Class Summary\nProblem \tClass \tReducible From\nSorting \tP \t—"
+  },
+  {
+    "id": "bf242901-075f-401a-af4f-c3bade07aaf9",
+    "text": "Problem \tClass \tReducible From\nSorting \tP \t—\nShortest Path (no neg cycle) \tP \t—\nSAT \tNP-Complete \t(First, by Cook)\n3-SAT \tNP-Complete \tSAT\nClique \tNP-Complete \t3-SAT\nVertex Cover \tNP-Complete \tClique\nHamiltonian Cycle \tNP-Complete \t3-SAT\nTSP (decision) \tNP-Complete \tHamiltonian Cycle\nGraph Coloring (k≥3) \tNP-Complete \t3-SAT\n0/1 Knapsack \tNP-Complete \tSubset Sum\nMultiprocessor Sched. \tNP-Hard \tPartition\nOptimal Code Gen. \tNP-Hard \tGraph Coloring"
+  },
+  {
+    "id": "f042e149-e549-4bf2-bb4a-4ef92f261d59",
+    "text": "Optimal Code Gen. \tNP-Hard \tGraph Coloring\nLast-Minute Exam Tips: 1) Always show dry run tables. 2) State time/space complexity. 3)\nFor NP proofs: show ∈NP then reduction. 4) For DP: write recurrence first, then table. 5)\nDistinguish decision vs optimization problems."
+  }
+]
