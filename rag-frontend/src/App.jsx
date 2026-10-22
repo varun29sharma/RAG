@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 
 function App(){
   const[messages,setMessages] = useState([
-    {text: "Hi! Ask me anything about your DAA study guide,", isBot: true},
+    {text: "Hi! I'm Campus Copilot — ask me anything from the ingested documents.", isBot: true},
   ]);
 
   const [input,setInput] = useState("");
@@ -42,7 +42,7 @@ function App(){
   return (
     <div style={{ maxWidth: "600px", margin: "50px auto", border: "1px solid #ccc", borderRadius: "8px", fontFamily: "sans-serif", boxShadow: "0 4px 6px rgba(0,0,0,0.1)" }}>
       <div style={{ background: "#007bff", color: "white", padding: "15px", textAlign: "center", borderTopLeftRadius: "7px", borderTopRightRadius: "7px" }}>
-        <h3 style={{ margin: 0 }}>DAA Study Buddy</h3>
+        <h3 style={{ margin: 0 }}>Campus Copilot</h3>
       </div>
       
       <div style={{ height: "400px", overflowY: "auto", padding: "20px", background: "#f8f9fa" }}>

@@ -1,7 +1,25 @@
 {
+  "name": "campus-copilot",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Hybrid RAG study assistant: dense + BM25 retrieval with Reciprocal Rank Fusion and Cohere reranking, over a local Ollama LLM.",
+  "scripts": {
+    "server": "node chroma-Day1/server.js",
+    "agent:debug": "node debug-stream.js",
+    "ingest": "node chroma-Day1/ingest.js",
+    "test": "node --test \"chroma-Day1/**/*.test.js\"",
+    "chat": "node chroma-Day1/chat.js"
+  },
   "dependencies": {
+    "@langchain/community": "^1.1.29",
+    "@langchain/core": "^1.2.1",
+    "@langchain/langgraph": "^1.4.7",
     "@langchain/ollama": "^1.3.0",
+    "chromadb": "^3.5.0",
     "cors": "^2.8.6",
-    "express": "^5.2.1"
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "zod": "^3.25.76"
   }
 }

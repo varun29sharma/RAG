@@ -1,2 +1,7 @@
 node_modules
 .env
+.freebuff/
+chroma-Day1/lib/documents.json
+chroma-Day1/lib/stores/
+chroma-Day1/chunks-store.json
+chroma-Day1/chunks-store.json.migrated

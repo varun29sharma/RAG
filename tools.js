@@ -1,27 +1,36 @@
 import { tool } from "@langchain/core/tools";
 import { z } from "zod";
-import { retrieveAndRerank } from "./retrieval-pipeline.js";
-import { Chroma } from "@langchain/community/vectorstores/chroma";
-import { OllamaEmbeddings } from "@langchain/ollama";
+import { hybridRetrieve } from "./chroma-Day1/lib/retrieval-core.js";
+import { createVectorInfrastructure } from "./chroma-Day1/lib/vector-store.js";
 
-const embeddings = new OllamaEmbeddings({
-  model: "nomic-embed-text",
-  baseUrl: "http://localhost:11434",
-});
+// One shared Chroma infrastructure for all tools (single connection set,
+// auto-seeds empty collections). The returned vectorStoreFn fans out over
+// every registered collection, so the agent searches ALL ingested documents.
+const { vectorStoreFn } = await createVectorInfrastructure();
 
-const sharedVectorStore = new Chroma(embeddings, {
-  collectionName: "daa_study_guide_v3",
-  url: "http://localhost:8000",
-});
+function formatResults(results, label) {
+  if (results.length === 0) {
+    return "No relevant results found in the study guide.";
+  }
+  return results
+    .map((r, i) => {
+      const sourceTag = r.source
+        ? ` (source: ${r.source}${r.page ? `, p.${r.page}` : ""})`
+        : "";
+      return `[${label} ${i + 1}]${sourceTag}\n${r.text}`;
+    })
+    .join("\n\n");
+}
 
 const searchStudyGuideTool = tool(
   async ({ query }) => {
-    // Pass the query and our initialized sharedVectorStore to the wrapper
-    const results = await retrieveAndRerank(query, sharedVectorStore, 3);
-    if (results.length === 0) {
-      return "No relevant results found in the study guide.";
-    }
-    return results.map((r, i) => `[Result ${i + 1}]\n${r.text}`).join("\n\n");
+    // Precise slice: top 3 after hybrid fusion + rerank.
+    const results = await hybridRetrieve({
+      query,
+      vectorStoreFn,
+      finalTopN: 3,
+    });
+    return formatResults(results, "Result");
   },
   {
     name: "search_study_guide",
@@ -37,12 +46,13 @@ const searchStudyGuideTool = tool(
 
 const summarizeTopicTool = tool(
   async ({ topic }) => {
-    // 🛠️ Grab a wider set of chunks (8) for synthesizing a broad topic summary
-    const results = await retrieveAndRerank(topic, sharedVectorStore, 8);
-    if (results.length === 0) {
-      return "No relevant material found on this topic.";
-    }
-    return results.map((r, i) => `[Excerpt ${i + 1}]\n${r.text}`).join("\n\n");
+    // Wider slice (8) so the agent can synthesize a broad overview.
+    const results = await hybridRetrieve({
+      query: topic,
+      vectorStoreFn,
+      finalTopN: 8,
+    });
+    return formatResults(results, "Excerpt");
   },
   {
     name: "summarize_topic",
