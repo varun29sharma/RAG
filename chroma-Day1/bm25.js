@@ -26,8 +26,8 @@ class BM25Index {
         finally it tells use "how many total chunks contain this word atleast once"
     */
     const df = {};
-    for (const tokens of this.docTokens) {
-      for (const term of new Set(tokens)) {
+    for (const tokens of this.docTokens) { // each token in this.docTokens
+      for (const term of new Set(tokens)) { // for every term in the this.docTokens
         df[term] = (df[term] || 0) + 1;
       }
     }
@@ -36,11 +36,11 @@ class BM25Index {
 
   _idf(term) {
     /* 
-        this is basically the value of a word
+        this is basically the value of a word.
         calculates the inverse document frequency.
 
-        if word has hugh occurence then its score tends to zero
-        but a word which is rare its weight is high
+        if a word has high occurrence, then its score tends to zero
+        but a word which is rare, its weight is high
 
         this ensures that if someone searches "what is bellmanford alg"
         it ignores "is" and focuses on "bellmanford"
