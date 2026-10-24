@@ -9,11 +9,8 @@ import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 import { reciprocalRankFusion } from "../rff.js";
-import {
-  getBm25Index,
-  collectionExists,
-  readCollectionStore,
-} from "./chunk-store.js";
+import { collectionExists, readCollectionStore } from "./chunk-store.js";
+import { BM25Index } from "../bm25.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -48,7 +45,12 @@ function createStableChunkId(value) {
 // Chroma docs, BM25 hits and registry chunks have different shapes. Fusion
 // and dedup need ONE shape: {id, text}. This also captures provenance
 // (source/page) so the citations feature has data to work with.
-function normalizeChunkRecord(doc, index, fallbackPrefix = "chunk", rawChunks = []) {
+function normalizeChunkRecord(
+  doc,
+  index,
+  fallbackPrefix = "chunk",
+  rawChunks = [],
+) {
   const metadata = doc?.metadata || {};
   const normalizedText = doc?.pageContent || doc?.text || "";
 
@@ -177,45 +179,72 @@ async function hybridRetrieve({
   let vectorRanked = [];
   if (vectorStoreFn) {
     try {
-      const vectorResults = await vectorStoreFn(normalizedQuestion, CONFIG.vectorTopK);
+      const vectorResults = await vectorStoreFn(
+        normalizedQuestion,
+        CONFIG.vectorTopK,
+      );
       vectorRanked = (vectorResults || []).map((doc, i) =>
         normalizeChunkRecord(doc, i, "vector", allRegistryChunks()),
       );
     } catch (err) {
-      console.warn("Vector search failed, continuing with BM25 only:", err.message);
+      console.warn(
+        "Vector search failed, continuing with BM25 only:",
+        err.message,
+      );
     }
   }
 
   // 2. Keyword path — BM25 over the merged chunks of all active collections.
-  let bm25Ranked = [];
-  const allChunks = [];
+
+  const registryChunks = [];
   for (const collection of activeCollections) {
-    const index = getBm25Index(collection);
-    if (!index) continue;
-    for (const hit of index.search(normalizedQuestion, CONFIG.bm25TopK)) {
-      allChunks.push(hit);
+    const chunks = readCollectionStore(collection);
+
+    for (const chunk of chunks) {
+      registryChunks.push(chunk);
     }
   }
-  const registryChunks = allRegistryChunks();
-  bm25Ranked = allChunks.map((item) => {
-    const rawDoc = registryChunks.find(
-      (c) => c.id === item.id || c.chunkId === item.id,
-    );
-    const extractedText =
-      item.text || rawDoc?.text || rawDoc?.pageContent || "";
-    return {
-      id: item.id || rawDoc?.id || `bm25-${createStableChunkId(extractedText)}`,
-      text: extractedText,
-      source: item.source || rawDoc?.source || null,
-      page: item.page || rawDoc?.page || null,
-    };
-  });
+
+  let bm25Ranked = [];
+  if (registryChunks.length > 0) {
+    const bm25Index = new BM25Index(registryChunks);
+
+    const hits = bm25Index.search(normalizedQuestion, CONFIG.bm25TopK);
+
+    for (const hit of hits) {
+      let rawDoc = null;
+      /* 
+        we do this because hits contains id text and score therefore
+        inorder to append the metadata from the original chunk 
+        we find the actual chunk and take the page and source details 
+        from it
+      */
+      for (const chunk of registryChunks) {
+        if (chunk.id === hit.id) {
+          rawDoc = chunk;
+          break;
+        }
+      }
+      const result = {
+        id: hit.id,
+        text: hit.text,
+        source: rawDoc ? rawDoc.source : null,
+        page: rawDoc ? rawDoc.page : null,
+        score: hit.score,
+      };
+      bm25Ranked.push(result);
+    }
+  }
 
   // 3. Fuse the two rankings (ranks only — scores are incomparable scales).
   const fusedResults = reciprocalRankFusion([vectorRanked, bm25Ranked]) || [];
 
   // 4. Pick the candidate pool (fused when confident, interleaved otherwise).
-  const candidatePool = selectCandidatePool(vectorRanked, bm25Ranked, fusedResults);
+  const candidatePool = selectCandidatePool(
+    vectorRanked,
+    bm25Ranked,
+    fusedResults,
+  );
 
   // 5. Precision rerank down to the final context slice.
   return rerankFn(normalizedQuestion, candidatePool, finalTopN);

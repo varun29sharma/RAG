@@ -13,23 +13,31 @@ import {
   purgeCollection,
   getBm25Index,
   listDocuments,
+  readCollectionStore,
 } from "../lib/chunk-store.js";
-
+import { BM25Index } from "../bm25.js";
+import { CONFIG } from "../lib/retrieval-core.js";
 // A tiny fake corpus: two collections, four chunks, enough overlapping
 // vocabulary that BM25 has real rankings to produce.
 const CORPUS_A = {
   name: "Test Doc A",
   collection: "test-alpha",
   chunks: [
-    { text: "Dynamic programming requires optimal substructure and overlapping subproblems." },
-    { text: "Bellman-Ford computes single-source shortest paths in O(V*E) time." },
+    {
+      text: "Dynamic programming requires optimal substructure and overlapping subproblems.",
+    },
+    {
+      text: "Bellman-Ford computes single-source shortest paths in O(V*E) time.",
+    },
   ],
 };
 const CORPUS_B = {
   name: "Test Doc B",
   collection: "test-beta",
   chunks: [
-    { text: "Kruskal's algorithm builds a minimum spanning tree using a union-find structure." },
+    {
+      text: "Kruskal's algorithm builds a minimum spanning tree using a union-find structure.",
+    },
     { text: "Quicksort has worst-case O(n^2) time but average O(n log n)." },
   ],
 };
@@ -123,8 +131,14 @@ test("hybridRetrieve returns [] for empty query", async () => {
 
 test("reciprocalRankFusion fuses two lists by rank", () => {
   const fused = reciprocalRankFusion([
-    [{ id: "a", text: "A" }, { id: "b", text: "B" }],
-    [{ id: "b", text: "B" }, { id: "c", text: "C" }],
+    [
+      { id: "a", text: "A" },
+      { id: "b", text: "B" },
+    ],
+    [
+      { id: "b", text: "B" },
+      { id: "c", text: "C" },
+    ],
   ]);
   // "b" appears in both lists → must outrank items seen once.
   assert.equal(fused[0].id, "b");
@@ -146,4 +160,55 @@ test("purgeCollection removes registry entries and store", () => {
       page: i + 1,
     })),
   });
+});
+
+test("hybridRetrieve uses one BM25 index across collections", async () => {
+  // Step 1: Ensure our test collections exist.
+  seedCorpus();
+
+  const collections = ["test-alpha", "test-beta"];
+
+  // Step 2: Read chunks from BOTH collections into one array.
+  const allChunks = [];
+
+  for (const collection of collections) {
+    const chunks = readCollectionStore(collection);
+
+    for (const chunk of chunks) {
+      allChunks.push(chunk);
+    }
+  }
+
+  // Step 3: Calculate the expected ranking using one BM25 index.
+  const combinedIndex = new BM25Index(allChunks);
+
+  const expectedHits = combinedIndex.search(
+    "dynamic programming",
+    CONFIG.bm25TopK,
+  );
+
+  const expectedIds = expectedHits.map((hit) => hit.id);
+
+  // Step 4: Run the actual production retrieval function.
+  const actualResults = await hybridRetrieve({
+    query: "dynamic programming",
+    collections,
+    vectorStoreFn: null,
+    rerankFn: passthroughRerank,
+    finalTopN: CONFIG.bm25TopK,
+  });
+
+  const actualIds = actualResults.map((result) => result.id);
+
+  // Step 5: Verify production returns the combined-index ranking.
+  assert.deepEqual(actualIds, expectedIds);
+
+  // Step 6: Verify source and page metadata are preserved.
+  for (const result of actualResults) {
+    const originalChunk = allChunks.find((chunk) => chunk.id === result.id);
+
+    assert.ok(originalChunk, "original chunk should exist");
+    assert.equal(result.source, originalChunk.source ?? null);
+    assert.equal(result.page, originalChunk.page ?? null);
+  }
 });
