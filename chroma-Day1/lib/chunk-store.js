@@ -24,6 +24,14 @@ const LEGACY_CHUNKS_PATH = path.join(ROOT_DIR, "chunks-store.json");
 let registryCache = null;          // parsed documents.json
 const bm25Cache = new Map();       // collectionName -> BM25Index
 
+/*
+  this is the second cache for combined indexes
+  because... instead of calculation stats for each collection seperately
+  pulling the chunks from both collections into one single stack is way
+  more efficient
+*/
+const combinedBm25Cache = new Map();
+
 // Collection names become filenames under stores/, so restrict the charset
 // to keep the path safe and predictable (also enforced by the ingest CLI).
 function isValidCollectionName(name) {
