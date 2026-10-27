@@ -21,8 +21,8 @@ const STORES_DIR = path.join(LIB_DIR, "stores");
 const LEGACY_CHUNKS_PATH = path.join(ROOT_DIR, "chunks-store.json");
 
 // In-memory caches, filled lazily on first access.
-let registryCache = null;          // parsed documents.json
-const bm25Cache = new Map();       // collectionName -> BM25Index
+let registryCache = null; // parsed documents.json
+const bm25Cache = new Map(); // collectionName -> BM25Index
 
 /*
   this is the second cache for combined indexes
@@ -82,8 +82,10 @@ function getDocumentsForCollection(collection) {
 }
 
 function collectionExists(collection) {
-  return isValidCollectionName(collection) &&
-    fs.existsSync(path.join(STORES_DIR, `${collection}.json`));
+  return (
+    isValidCollectionName(collection) &&
+    fs.existsSync(path.join(STORES_DIR, `${collection}.json`))
+  );
 }
 
 // Registers a freshly ingested document and writes its chunk store.
@@ -134,7 +136,8 @@ function registerDocument({ name, collection, sourceFile, flatChunks }) {
   // Drop any cached index for this collection so the next retrieval
   // rebuilds BM25 over the merged chunk set.
   bm25Cache.delete(collection);
-
+  //deleting the secondary cache
+  combinedBm25Cache.clear();
   return doc;
 }
 
@@ -153,6 +156,7 @@ function purgeCollection(collection) {
   const storePath = path.join(STORES_DIR, `${collection}.json`);
   if (fs.existsSync(storePath)) fs.rmSync(storePath);
   bm25Cache.delete(collection);
+  combinedBm25Cache.clear();
 }
 
 function readCollectionStore(collection) {
@@ -188,10 +192,40 @@ function getBm25Index(collection) {
   return index;
 }
 
+function getCombinedBm25Index(collections) {
+  if (!Array.isArray(collections)) {
+    throw new Error("Collections must be an array");
+  }
+
+  const activeCollections = [
+    //used to remove duplicate collection names
+    ...new Set(collections.filter(collectionExists)),
+  ].sort();
+
+  if (activeCollections.length === 0) return null;
+
+  const cacheKey = JSON.stringify(activeCollections);
+
+  if (combinedBm25Cache.has(cacheKey)) {
+    return combinedBm25Cache.get(cacheKey);
+  }
+  //flatMap is used to combine the chunks from all active collections
+  const chunks = activeCollections.flatMap(readCollectionStore);
+  if (chunks.length === 0) return null;
+
+  const index = new BM25Index(chunks);
+  combinedBm25Cache.set(cacheKey, index);
+
+  return index;
+}
+
 // One-time migration: turns the legacy chunks-store.json into a proper
 // registry entry + collection store, then renames the legacy file to
 // chunks-store.json.migrated so it is never read twice.
-function migrateLegacyChunks(collection = "daa-study-guide", name = "DAA Study Guide (Units 3-5)") {
+function migrateLegacyChunks(
+  collection = "daa-study-guide",
+  name = "DAA Study Guide (Units 3-5)",
+) {
   if (!fs.existsSync(LEGACY_CHUNKS_PATH)) {
     return { migrated: false, reason: "No legacy chunks-store.json found." };
   }
@@ -218,4 +252,5 @@ export {
   getBm25Index,
   migrateLegacyChunks,
   isValidCollectionName,
+  getCombinedBm25Index,
 };
