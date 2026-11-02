@@ -186,20 +186,22 @@ function selectCandidatePool(vectorRanked, bm25Ranked, fusedResults) {
   if (vectorRanked.length > 0 && hasIntersection && validFused.length > 0) {
     return validFused.slice(0, CONFIG.poolSize);
   }
+  //instead of combining the two lists you inter-leave them
+  return interleaveCandidateLists(vectorRanked, bm25Ranked, CONFIG.poolSize);
 
-  const rawPool = [...vectorRanked, ...bm25Ranked];
-  const seenText = new Set();
-  const pool = [];
-  for (const chunk of rawPool) {
-    if (!chunk || !chunk.text) continue;
-    const cleanText = chunk.text.trim();
-    if (cleanText.length > 0 && !seenText.has(cleanText)) {
-      seenText.add(cleanText);
-      pool.push(chunk);
-    }
-    if (pool.length >= CONFIG.poolSize) break;
-  }
-  return pool;
+  // const rawPool = [...vectorRanked, ...bm25Ranked];
+  // const seenText = new Set();
+  // const pool = [];
+  // for (const chunk of rawPool) {
+  //   if (!chunk || !chunk.text) continue;
+  //   const cleanText = chunk.text.trim();
+  //   if (cleanText.length > 0 && !seenText.has(cleanText)) {
+  //     seenText.add(cleanText);
+  //     pool.push(chunk);
+  //   }
+  //   if (pool.length >= CONFIG.poolSize) break;
+  // }
+  // return pool;
 }
 
 // --- The hybrid retrieval entrypoint ----------------------------------------
