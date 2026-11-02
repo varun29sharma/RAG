@@ -9,8 +9,11 @@ import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 import { reciprocalRankFusion } from "../rff.js";
-import { collectionExists, readCollectionStore } from "./chunk-store.js";
-import { BM25Index } from "../bm25.js";
+import {
+  collectionExists,
+  readCollectionStore,
+  getCombinedBm25Index,
+} from "./chunk-store.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -77,7 +80,13 @@ function normalizeChunkRecord(
     id: candidateId,
     text: normalizedText,
     source: metadata?.source || matchingRawChunk?.source || null,
-    page: metadata?.pageNumber || matchingRawChunk?.page || null,
+    /*
+      in JS 0 is false so the '||' op ignores it i.e if a doc
+      has a page no 0 then that will be ignored 
+      therefore instead of '||' u can use '??' as it also considers 
+      zero values
+    */
+    page: metadata?.pageNumber ?? matchingRawChunk?.page ?? null,
   };
 }
 
@@ -122,7 +131,6 @@ async function rerankWithCohere(query, candidates, topN = 3) {
     return candidates.slice(0, topN);
   } finally {
     clearTimeout(timer);
-    3 === 3;
   }
 }
 
@@ -207,7 +215,7 @@ async function hybridRetrieve({
 
   let bm25Ranked = [];
   if (registryChunks.length > 0) {
-    const bm25Index = new BM25Index(registryChunks);
+    const bm25Index = getCombinedBm25Index(activeCollections);
 
     const hits = bm25Index.search(normalizedQuestion, CONFIG.bm25TopK);
 
