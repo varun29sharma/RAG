@@ -14,6 +14,7 @@ import {
   readCollectionStore,
   getCombinedBm25Index,
 } from "./chunk-store.js";
+import { Min } from "chromadb";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -132,6 +133,43 @@ async function rerankWithCohere(query, candidates, topN = 3) {
   } finally {
     clearTimeout(timer);
   }
+}
+
+function interleaveCandidateLists(vectorRanked, bm25Ranked, poolSize) {
+  function addCandidate(chunk) {
+    if (res.length >= poolSize) return;
+
+    if (!chunk || !chunk.id || !chunk.text) return;
+
+    if (seenIds.has(chunk.id)) {
+      return;
+    }
+    seenIds.add(chunk.id);
+    res.push(chunk);
+  }
+
+  if (!Number.isInteger(poolSize) || poolSize <= 0) return [];
+  let res = [];
+  let m = vectorRanked.length;
+  let n = bm25Ranked.length;
+
+  let i = 0;
+  let j = 0;
+
+  let seenIds = new Set();
+  let k = 0;
+  while (i < m || j < n) {
+    if (i < m) {
+      addCandidate(vectorRanked[i++]);
+    }
+    if (j < n) {
+      addCandidate(bm25Ranked[j++]);
+    }
+
+    if (res.length >= poolSize) break;
+  }
+
+  return res;
 }
 
 // --- Candidate pool ----------------------------------------------------------
@@ -286,4 +324,5 @@ export {
   hybridRetrieve,
   listRegisteredCollections,
   allRegistryChunks,
+  interleaveCandidateLists,
 };
