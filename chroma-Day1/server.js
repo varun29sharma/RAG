@@ -6,7 +6,10 @@
 import express from "express";
 import cors from "cors";
 import { hybridRetrieve } from "./lib/retrieval-core.js";
-import { createVectorInfrastructure, OLLAMA_BASE_URL } from "./lib/vector-store.js";
+import {
+  createVectorInfrastructure,
+  OLLAMA_BASE_URL,
+} from "./lib/vector-store.js";
 import { listDocuments } from "./lib/chunk-store.js";
 import { ChatOllama } from "@langchain/ollama";
 
@@ -100,8 +103,14 @@ Answer:
     const sources = finalChunks.map((c, i) => ({
       contextBlock: i + 1,
       id: c.id,
-      source: c.source || null,
-      page: c.page || null,
+      /*
+        in JS 0 is false so the '||' op ignores it i.e if a doc
+        has a page no 0 then that will be ignored 
+        therefore instead of '||' u can use '??' as it also considers 
+        zero values
+      */
+      source: c.source ?? null,
+      page: c.page ?? null,
       relevanceScore: c.relevanceScore ?? null,
     }));
 
@@ -119,7 +128,9 @@ Answer:
 async function startServer() {
   const infra = await createVectorInfrastructure();
   vectorStoreFn = infra.vectorStoreFn;
-  console.log(`Vector path: ${infra.collections.length} collection(s) — ${infra.collections.join(", ") || "none"}`);
+  console.log(
+    `Vector path: ${infra.collections.length} collection(s) — ${infra.collections.join(", ") || "none"}`,
+  );
 
   llm = new ChatOllama({
     model: LLM_MODEL,

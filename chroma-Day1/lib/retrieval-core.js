@@ -58,14 +58,19 @@ function normalizeChunkRecord(
   const metadata = doc?.metadata || {};
   const normalizedText = doc?.pageContent || doc?.text || "";
 
-  // Best effort: match a registry chunk by text equality/containment so the
-  // canonical registry ID survives even when Chroma metadata is missing.
-  const matchingRawChunk = rawChunks.find(
-    (chunk) =>
-      chunk?.text === normalizedText ||
-      chunk?.text?.includes(normalizedText) ||
-      normalizedText.includes(chunk?.text || ""),
-  );
+  /*
+    say chromaDB returns a chunk but its metadata is missing
+    the retrieval system can still find the original chunk in the 
+    registry and recover its ID
+
+    NOTE : this approach only works when the retrieved text exactly 
+           matches the stored text.... if chroma returns truncated
+           or modified text .find() won't find it
+  */
+  const matchingRawChunk = rawChunks.find((chunk) => {
+    if (!chunk || !normalizedText) return false;
+    return chunk.text === normalizedText;
+  });
 
   const candidateId =
     doc?.id ||
@@ -80,7 +85,17 @@ function normalizeChunkRecord(
   return {
     id: candidateId,
     text: normalizedText,
-    source: metadata?.source || matchingRawChunk?.source || null,
+    /* 
+    this currently gives more preference to the fallback source 
+    and due to which even if u have a file name u would still use
+    '''chunk-store'''
+    now we replace it with the below code
+    */
+    source:
+      metadata?.source && metadata.source !== "chunk-store"
+        ? metadata.source
+        : (matchingRawChunk?.source ?? null),
+
     /*
       in JS 0 is false so the '||' op ignores it i.e if a doc
       has a page no 0 then that will be ignored 

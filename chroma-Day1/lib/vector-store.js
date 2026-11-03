@@ -82,13 +82,18 @@ async function createVectorInfrastructure() {
               source: chunk.source || "chunk-store",
               chunkIndex: index,
               chunkId: chunk.id,
-              pageNumber: chunk.page || 1,
+              /*
+                in JS 0 is false so the '||' op ignores it i.e if a doc
+                has a page no 0 then that will be ignored 
+                therefore instead of '||' u can use '??' as it also considers 
+                zero values
+              */
+              pageNumber: chunk.page ?? 1,
             },
           }));
-          await store.addDocuments(
-            documents,
-            { ids: chunks.map((chunk) => chunk.id) },
-          );
+          await store.addDocuments(documents, {
+            ids: chunks.map((chunk) => chunk.id),
+          });
           console.log(
             `Seeded Chroma collection "${name}" with ${documents.length} chunks.`,
           );
